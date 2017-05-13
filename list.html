@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+<head>
+    <meta charset="utf-8">
+    <title>上海航空信息可视化</title>
+    <link rel="stylesheet" href="./assets/css/amazeui.css">
+    <link rel="stylesheet" href="./assets/css/hover.css">
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/amazeui.min.js"></script>
+    <script src="assets/js/result.js"></script>
+    <style>
+        .am-container{
+            max-width:1200px;
+        }
+        .no-padding{
+            padding-left:0;
+            padding-right:0;
+        }
+        tr:hover{
+            color:orangered;;
+        }
+    </style>
+    <script>
+        var cityArr={
+            "0":"天津",
+            "1":"昆明",
+            "2":"广州",
+            "3":"南京",
+            "4":"长春",
+            "5":"重庆",
+            "6":"长沙",
+            "7":"北京",
+            "8":"厦门",
+            "9":"大连",
+            "10":"all",
+        };
+    </script>
+</head>
+<body style="width: 100%;height: 100%;background-color: #404a59;color:#fff;">
+<!--modal-->
+<div class="am-modal am-modal-no-btn" tabindex="-1" id="errModal">
+    <div class="am-modal-dialog">
+        <div class="am-modal-hd"><font color="#333;">系统错误</font>
+        </div>
+        <div class="am-modal-bd">
+            <span class="am-text-danger" id="errSpan">参数错误，<font id="errSecond" class="am-text-lg">3</font>  秒后返回系统主页
+                .</span>
+        </div>
+    </div>
+</div>
+<!--modal end-->
+<div id="header" style="background-color:#283734;height:150px;padding-top: 40px;color:#fff;" class="am-text-center">
+    <h1 style="color:#fff;font-size: 35px;">上海航空信息可视化</h1>
+    <span><a href="./work1.html" class="am-btn am-btn-sm am-btn-warning hvr-backward"><i class="am-icon-angle-left"></i><i
+            class="am-icon-angle-left"></i> 查询页</a> </span>
+    <span><a id="link"href="" class="am-btn am-btn-primary am-btn-sm hvr-forward">航班列表统计图
+        <i class="am-icon-angle-right"></i><i class="am-icon-angle-right"></i></a></span>
+</div>
+<div id="container">
+    <table class="am-table am-text-center am-table-hover">
+        <thead>
+        <tr>
+            <th class="am-text-center">arrivecity</th>
+            <th class="am-text-center">arriveport</th>
+            <th class="am-text-center">arrivetime</th>
+            <th class="am-text-center">departport</th>
+            <th class="am-text-center">departtime</th>
+        </tr>
+        </thead>
+        <tbody id="tbody">
+
+        </tbody>
+    </table>
+</div>
+</body>
+<script>
+    /** Created by postbird on 2016/4/1.  ...*/
+    /**
+     *      @postbird
+     *      1、本插件采用js编写，可直接将函数复制到个人js文件，减少get请求数
+     *      2、author：powered by postbird
+     *      3、email： ptbird@yeah.net
+     *      4、site：http://www.ptbird.cn
+     *      5、license : MIT
+     * */
+    /**
+     * 通过 js location对象的search属性返回？以及后面的参数部分
+     */
+    function getUrlParamToObj() {
+        var url = location.search;//获取参数部分
+        var ansObj = new Object();//设置返回参数的对象
+        if (url.indexOf("?") != -1) {  //indexOf()如果返回-1 则存在?
+            var str = url.substr(1).split("&");//将？去掉 进行&分割  a=1 b=2  进行对象拼装
+            for (var i = 0; i < str.length; i++) {
+                var tempArr = str[i].split("=");//拆分 =
+                ansObj[tempArr[0]] = (tempArr[1]);
+            }
+        }
+        return ansObj;
+    }
+</script>
+<script>
+    $(document).ready(function(){
+        var num=getUrlParamToObj();
+        num=num.c || 11;
+        num=parseInt(num);
+        if(num<0 || num>=10){
+            var time=3;
+            var id=setInterval(function () {
+                $("#errSecond").text(time);
+                time-=1;
+                if(time<0){
+                    clearInterval(id);
+                    window.location.href='./index.html';
+                }
+            },1000);
+            $("#errModal").modal();
+            return false;
+        }
+        // get city name
+        var cityName=cityArr[num];
+        // get json info from result.js
+        var airInfo=[];
+        var htm='';
+        airResult.forEach(function(v){
+            if(v.arrivecity==cityName){
+                // add table
+                htm+='<tr>' +
+                    '<td>'+v.arrivecity+'</td>' +
+                    '<td>'+v.arriveport+'</td>' +
+                    '<td>'+v.arrivetime+'</td>' +
+                    '<td>'+v.departport+'</td>' +
+                    '<td>'+v.departtime+'</td>' +
+                    '</tr>';
+                // airInfo.push(v);
+            }
+        });
+        // show Info
+        $("#tbody").html(htm);
+        // alter link href
+        $("#link").attr('href','./charts2.html?c='+num);
+    });
+
+</script>
+</html>

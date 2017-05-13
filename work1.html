@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+<head>
+    <meta charset="utf-8">
+    <title>上海航空信息可视化</title>
+    <link rel="stylesheet" href="./assets/css/amazeui.css">
+    <link rel="stylesheet" href="./assets/css/hover.css">
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/amazeui.min.js"></script>
+    <style>
+        .am-container{
+            max-width:1200px;
+        }
+        .no-padding{
+            padding-left:0;
+            padding-right:0;
+        }
+    </style>
+    <script>
+        var cityArr={
+            "0":"天津",
+            "1":"昆明",
+            "2":"广州",
+            "3":"南京",
+            "4":"长春",
+            "5":"重庆",
+            "6":"长沙",
+            "7":"北京",
+            "8":"厦门",
+            "9":"大连",
+            "10":"all",
+        };
+    </script>
+</head>
+<body style="width: 100%;height: 100%;overflow: hidden;background-color: #404a59;">
+    <div id="header" style="background-color:#283734;height:150px;padding-top: 40px;" class="am-text-center">
+        <h1 style="color:#fff;font-size: 35px;">上海航空信息可视化</h1>
+        <span><a id="link"href="./index.html" class="am-btn am-btn-primary am-btn-sm hvr-backward"><i
+                class="am-icon-angle-left"></i><i
+                class="am-icon-angle-left"></i>   返回主页
+        </a></span>
+    </div>
+<div id="menu" style="height:100%;width:20%;float:left;padding-top:40px;border-right:1px
+solid #283734;">
+    <form class="am-form">
+        <fieldset class="am-u-sm-12">
+            <legend  ><font color="#fff"><i class="am-icon-list"></i> 菜单</font></legend>
+            <div class="am-form-group-sm">
+                <label for=""class="am-u-sm-12 no-padding"><font color="#fff">目的地：</font></label>
+                <div class="am-u-sm-8 no-padding">
+                    <select id="test" > </select>
+                </div>
+                <div class="am-u-sm-4 no-padding">
+                    <input type="button" value=" 查看" class="am-btn am-btn-primary am-text-right"
+                          onclick="checkOption()" />
+                </div>
+
+                    <script type="text/javascript" src="1.js"></script>
+
+                    <script type="text/javascript" src="2.js"></script>
+
+                    <script type="text/javascript" src="china.js"></script>
+
+                    <script type="text/javascript" src="4.js"></script>
+
+                    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>
+
+                    <script type="text/javascript" src="5.js"></script>
+
+                    <script type="text/javascript">
+                        var myCitys=new Array("天津","昆明","广州","南京","长春","重庆","长沙","北京","厦门","大连","all");
+                        var SHDataAll = [
+
+                            [{name:'上海'},{name:'天津',value:95}],
+
+                            [{name:'上海'},{name:'昆明',value:90}],
+
+                            [{name:'上海'},{name:'广州',value:80}],
+
+                            [{name:'上海'},{name:'南京',value:70}],
+
+                            [{name:'上海'},{name:'长春',value:60}],
+
+                            [{name:'上海'},{name:'重庆',value:50}],
+
+                            [{name:'上海'},{name:'长沙',value:40}],
+
+                            [{name:'上海'},{name:'北京',value:30}],
+
+                            [{name:'上海'},{name:'厦门',value:20}],
+
+                            [{name:'上海'},{name:'大连',value:10}]
+
+                        ];
+                        var SHData = SHDataAll; //初始化，并赋值传入test.js
+                        for(var i=0;i<myCitys.length;i++){
+                            document.getElementById("test").innerHTML +='<option value="'+i+'">'+myCitys[i]+'</option>'
+                        };
+                        function checkOption()
+                        {
+
+                            index = document.getElementById("test").value; //调用select的序列号0-10
+                            if (index < 10){
+                                SHData = [SHDataAll[index]];} //10所不同的城市
+                            else {SHData = SHDataAll} //全部显示
+                            //寻找test.js并重载
+                            var oHead = document.getElementsByTagName("div").item(0);
+                            var oScript= document.createElement("script");
+                            oScript.type = "text/javascript";
+                            oScript.src="test.js";
+                            oHead.appendChild( oScript);
+                            var obj=$("#container");
+                            obj.attr('onclick',"showMoreList("+index+")");
+                        }
+                    </script>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+<div id="container" style="height:650px;width:1270px;float:left;">
+    <script type="text/javascript" src="test.js" ></script>
+</div>
+<script>
+    $(document).ready(function(){
+        index=10;
+        var obj=$("#container");
+        obj.attr('onclick',"showMoreList("+index+")");
+    });
+    function showMoreList(num){
+        num =parseInt(num);
+        if(num<0 || num>=10){
+            return false;
+        }
+        var htmlUrl='./list.html?c='+num;
+        window.location.href=htmlUrl;
+    }
+</script>
+</body>
+</html>

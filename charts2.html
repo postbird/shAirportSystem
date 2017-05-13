@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+<head>
+    <meta charset="utf-8">
+    <title>上海航空信息可视化</title>
+    <link rel="stylesheet" href="./assets/css/amazeui.css">
+    <link rel="stylesheet" href="./assets/css/hover.css">
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/amazeui.min.js"></script>
+    <script src="assets/js/result.js"></script>
+    <script src="assets/js/echarts.js"></script>
+    <style>
+        .am-container{
+            max-width:1200px;
+        }
+        .no-padding{
+            padding-left:0;
+            padding-right:0;
+        }
+        tr:hover{
+            color:orangered;;
+        }
+    </style>
+    <script>
+        var cityArr={
+            "0":"天津",
+            "1":"昆明",
+            "2":"广州",
+            "3":"南京",
+            "4":"长春",
+            "5":"重庆",
+            "6":"长沙",
+            "7":"北京",
+            "8":"厦门",
+            "9":"大连",
+            "10":"all",
+        };
+    </script>
+</head>
+<body style="width: 100%;height: 100%;background-color: #fdfdfd;">
+<!--modal-->
+<div class="am-modal am-modal-no-btn" tabindex="-1" id="errModal">
+    <div class="am-modal-dialog">
+        <div class="am-modal-hd"><font color="#333;">系统错误</font>
+        </div>
+        <div class="am-modal-bd">
+            <span class="am-text-danger" id="errSpan">参数错误，<font id="errSecond" class="am-text-lg">3</font>  秒后返回系统主页
+                .</span>
+        </div>
+    </div>
+</div>
+<!--modal end-->
+<div id="header" style="background-color:#283734;height:150px;padding-top: 40px;color:#fff;" class="am-text-center">
+    <h1 style="color:#fff;font-size: 35px;">上海航空信息可视化</h1>
+    <span><a id="link"href="" class="am-btn am-btn-primary am-btn-sm hvr-backward"><i class="am-icon-angle-left"></i><i
+            class="am-icon-angle-left"></i>   航班列表详情
+        </a></span>
+</div>
+<div id="container" class="am-container" style="height:600px;width:1000px;">
+
+</div>
+</body>
+<script>
+    /** Created by postbird on 2016/4/1.  ...*/
+    /**
+     *      @postbird
+     *      1、本插件采用js编写，可直接将函数复制到个人js文件，减少get请求数
+     *      2、author：powered by postbird
+     *      3、email： ptbird@yeah.net
+     *      4、site：http://www.ptbird.cn
+     *      5、license : MIT
+     * */
+    /**
+     * 通过 js location对象的search属性返回？以及后面的参数部分
+     */
+    function getUrlParamToObj() {
+        var url = location.search;//获取参数部分
+        var ansObj = new Object();//设置返回参数的对象
+        if (url.indexOf("?") != -1) {  //indexOf()如果返回-1 则存在?
+            var str = url.substr(1).split("&");//将？去掉 进行&分割  a=1 b=2  进行对象拼装
+            for (var i = 0; i < str.length; i++) {
+                var tempArr = str[i].split("=");//拆分 =
+                ansObj[tempArr[0]] = (tempArr[1]);
+            }
+        }
+        return ansObj;
+    }
+</script>
+<script>
+    $(document).ready(function(){
+        var num=getUrlParamToObj();
+        num=num.c || 11;
+        num=parseInt(num);
+        if(num<0 || num>=10){
+            var time=3;
+            var id=setInterval(function () {
+                $("#errSecond").text(time);
+                time-=1;
+                if(time<0){
+                    clearInterval(id);
+                    window.location.href='./index.html';
+                }
+            },1000);
+            $("#errModal").modal();
+            return false;
+        }
+        // get city name
+        var cityName=cityArr[num];
+        // get json info from result.js
+        var airInfo=[];
+        /** airInfoX
+         *  这个数组的结构是 [{key:num},{key:num},]
+         *  其中key代表是的day，就是2017-03-04
+         *  num代表这天有多少航班
+         */
+        var airInfoX=[];
+        var airInfoX2=[];
+        var airInfoX3=[];
+        var htm='';
+        //  airResult是result.js中的全局变量
+        //  遍历全局变量（遍历所有的航班信息，找到符合当前cityName的数据）
+        //  下面的foreach便利完之后，就形成了一个aitInfoX数组,这个数组表示每一天的航班数有多少
+        //  数组的key是x轴数据 就是日期
+        //  数组的value是y轴数据，表示多少航班
+        airResult.forEach(function(v){
+            // 如果airResult中attivecity是当前需要的城市（比如广州）
+            if(v.arrivecity==cityName){
+                // 获取这条数据的departtime 并且截取字符串只取日期 2017-03-04 06:45:00 变成 2017-03-04
+                var day=(v.departtime).substr(0,10);
+                // 从aitInfoX中获取某一天有多少航班（这个值是变化的，因为还没有遍历完aitResult）
+                var tmpNum=airInfoX[day] ;
+                // 如果是第一次取值,tmpNum肯定是没有值的，所以如果tmpNum==undefined
+                //  表示 airInfoX['2017-03-04']是空的，没有赋值
+                if(tmpNum== undefined){
+                    // 之前没有赋值 现在就需要将值赋1 因为一经发现了一次航班
+                    tmpNum=1;
+                }else{
+                    // 如果之前有值，则将之前的航班数+1
+                    tmpNum+=1;
+                }
+                // 将之前的值覆盖成新的值（tmpNum已经成了最新的，之前的数据就没用了）
+                airInfoX[day]=tmpNum;
+            }
+        });
+        // 从得到的airInfoX中获取到所有的key和value
+        // airInfoX2,airInfoX3 分别构成了X轴数据和Y轴数据
+        // airInfoX实际上就是为了生成airInfoX2和airInfoX3
+        for(x in airInfoX){
+            // aitInfoX2是一个数组，里面是airInfoX中的key，也就是日期
+            airInfoX2.push(x);
+            // aitInfoX3是一个数组，里面是airInfoX中的value，也就是航班数
+            airInfoX3.push(airInfoX[x]);
+        }
+        // link href
+        $("#link").attr('href','./list.html?c='+num);
+        // show echarts
+        var myChart = echarts.init(document.getElementById('container'));
+        myChart.showLoading();
+        option = {
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow',
+                    label: {
+                        show: true
+                    }
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    mark : {show: true},
+                    dataView : {show: true, readOnly: false},
+                    magicType: {show: true, type: ['line', 'bar']},
+                    restore : {show: true},
+                    saveAsImage : {show: true}
+                }
+            },
+            calculable : true,
+            legend: {
+                data:['Growth'],
+                itemGap: 5
+            },
+            grid: {
+                top: '12%',
+                left: '12%',
+                right: '10%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type : 'category',
+                    data : airInfoX2
+                }
+            ],
+            yAxis: [
+                {
+                    type : 'value',
+                    name : '航班次数',
+                    axisLabel: {
+                        formatter: function (a) {
+                            a = +a;
+                            return isFinite(a)
+                                ? echarts.format.addCommas(+a)
+                                : '';
+                        }
+                    }
+                }
+            ],
+            dataZoom: [
+                {
+                    show: true,
+                    start:12,
+                    end: 100
+                },
+                {
+                    type: 'inside',
+                    start: 12,
+                    end: 100
+                },
+                {
+                    show: true,
+                    yAxisIndex: 0,
+                    filterMode: 'empty',
+                    width: 30,
+                    height: '80%',
+                    showDataShadow: false,
+                    left: '93%'
+                }
+            ],
+            series : [
+            {
+                name: '今日航班次数',
+                type: 'bar',
+                data: airInfoX3
+            }
+        ]
+        };
+
+        myChart.setOption(option);
+        myChart.hideLoading();
+    });
+
+</script>
+</html>
